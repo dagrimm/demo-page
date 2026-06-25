@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dataflow Labs — Live Webinar</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:      #0A0E1F;
+      --bg-soft: #0E1430;
+      --ink:     #EDF1FF;
+      --muted:   #7C86B5;
+      --line:    rgba(255, 255, 255, 0.10);
+
+      --teal:   #4FD1C5;  /* source   */
+      --violet: #8B7CFF;  /* transform */
+      --amber:  #FFC36B;  /* you       */
+
+      --display: "Space Grotesk", system-ui, sans-serif;
+      --body:    "IBM Plex Sans", system-ui, sans-serif;
+      --mono:    "IBM Plex Mono", ui-monospace, monospace;
+
+      --gutter: clamp(1.5rem, 6vw, 7rem);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* one quiet ambient glow behind the headline — the only background flourish */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(60vw 50vh at 18% 30%, rgba(139, 124, 255, 0.16), transparent 70%),
+        radial-gradient(40vw 40vh at 85% 80%, rgba(79, 209, 197, 0.10), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ---- status bar ---- */
+    .statusbar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.4rem var(--gutter);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .brand { display: flex; align-items: center; gap: 0.65rem; color: var(--ink); }
+    .brand .mark {
+      width: 10px; height: 10px; border-radius: 2px;
+      background: linear-gradient(135deg, var(--teal), var(--violet));
+      transform: rotate(45deg);
+    }
+    .clock { display: flex; align-items: center; gap: 0.6rem; }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #FF5B6E;
+      box-shadow: 0 0 0 0 rgba(255, 91, 110, 0.6);
+      animation: pulse 1.8s infinite;
+    }
+
+    /* ---- hero ---- */
+    .hero {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(3rem, 9vh, 7rem) var(--gutter);
+      max-width: 1100px;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 1.6rem;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(3rem, 11vw, 8rem);
+      line-height: 0.94;
+      letter-spacing: -0.03em;
+    }
+    h1 .word { display: inline-block; }
+    h1 .stream {
+      background: linear-gradient(90deg, var(--teal) 5%, var(--violet) 50%, var(--amber) 95%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      margin-top: 2rem;
+      max-width: 46ch;
+      font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+      line-height: 1.6;
+      color: #C5CCEC;
+    }
+
+    /* ---- signature: the dataflow pipeline ---- */
+    .pipeline {
+      margin-top: clamp(3rem, 7vh, 5rem);
+      max-width: 880px;
+    }
+    .pipeline svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+    .pipe-base { stroke: var(--line); stroke-width: 2; fill: none; }
+    .pipe-flow {
+      stroke: url(#flowgrad);
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 10 18;
+      animation: flow 2.6s linear infinite;
+    }
+    .node { fill: var(--bg); stroke-width: 2.5; }
+    .packet { filter: drop-shadow(0 0 6px currentColor); }
+
+    .nodelabels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .nodelabels .you { color: var(--amber); }
+
+    /* ---- meta footer ---- */
+    .meta {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      padding: 1.6rem var(--gutter);
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+    .meta dt { color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.7rem; }
+    .meta dd { color: var(--ink); margin-top: 0.35rem; }
+
+    /* ---- page-load sequence ---- */
+    .reveal { opacity: 0; transform: translateY(18px); animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .d1 { animation-delay: 0.05s; }
+    .d2 { animation-delay: 0.15s; }
+    .d3 { animation-delay: 0.28s; }
+    .d4 { animation-delay: 0.42s; }
+    .d5 { animation-delay: 0.55s; }
+
+    @keyframes rise  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes flow  { to { stroke-dashoffset: -28; } }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(255, 91, 110, 0.6); }
+      70%  { box-shadow: 0 0 0 9px rgba(255, 91, 110, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 91, 110, 0); }
+    }
+
+    @media (max-width: 560px) {
+      .nodelabels { font-size: 0.6rem; letter-spacing: 0.08em; }
+    }
+
+    :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="statusbar">
+    <span class="brand"><span class="mark"></span> Dataflow&nbsp;Labs</span>
+    <span class="clock"><span class="live-dot"></span> Live now · 25 Jun 2026</span>
+  </header>
+
+  <main class="hero">
+    <p class="eyebrow reveal d1">Live Webinar</p>
+
+    <h1>
+      <span class="word reveal d2">Welcome&nbsp;to</span><br />
+      <span class="word stream reveal d3">the stream.</span>
+    </h1>
+
+    <p class="subtitle reveal d4">
+      Glad you could join us. We're about to go live — settle in, grab a coffee,
+      and watch the data move from raw to ready.
+    </p>
+
+    <!-- Signature: a live pipeline. Data flows source → transform → model → you. -->
+    <figure class="pipeline reveal d5" aria-label="Today's flow: from source, through transform and model, to you.">
+      <svg viewBox="0 0 920 130" role="img">
+        <defs>
+          <linearGradient id="flowgrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"  stop-color="#4FD1C5" />
+            <stop offset="50%" stop-color="#8B7CFF" />
+            <stop offset="100%" stop-color="#FFC36B" />
+          </linearGradient>
+        </defs>
+
+        <!-- the pipe -->
+        <path id="pipe" class="pipe-base"
+              d="M 40 65 C 180 15, 240 115, 360 65 S 580 15, 640 65 S 820 115, 880 65" />
+        <path class="pipe-flow"
+              d="M 40 65 C 180 15, 240 115, 360 65 S 580 15, 640 65 S 820 115, 880 65" />
+
+        <!-- nodes -->
+        <circle class="node" cx="40"  cy="65" r="9" stroke="#4FD1C5" />
+        <circle class="node" cx="360" cy="65" r="9" stroke="#8B7CFF" />
+        <circle class="node" cx="640" cy="65" r="9" stroke="#8B7CFF" />
+        <circle class="node" cx="880" cy="65" r="11" stroke="#FFC36B" fill="#FFC36B" fill-opacity="0.15" />
+
+        <!-- traveling packets -->
+        <circle class="packet" r="5" fill="#4FD1C5" color="#4FD1C5">
+          <animateMotion dur="3.2s" repeatCount="indefinite" rotate="auto"
+                         keyPoints="0;1" keyTimes="0;1" calcMode="linear">
+            <mpath href="#pipe" />
+          </animateMotion>
+        </circle>
+        <circle class="packet" r="5" fill="#8B7CFF" color="#8B7CFF">
+          <animateMotion dur="3.2s" begin="1.0s" repeatCount="indefinite">
+            <mpath href="#pipe" />
+          </animateMotion>
+        </circle>
+        <circle class="packet" r="5" fill="#FFC36B" color="#FFC36B">
+          <animateMotion dur="3.2s" begin="2.1s" repeatCount="indefinite">
+            <mpath href="#pipe" />
+          </animateMotion>
+        </circle>
+      </svg>
+
+      <figcaption class="nodelabels">
+        <span>source</span>
+        <span>transform</span>
+        <span>model</span>
+        <span class="you">you</span>
+      </figcaption>
+    </figure>
+  </main>
+
+  <footer class="meta">
+    <div><dt>Format</dt><dd>Live talk + Q&amp;A</dd></div>
+    <div><dt>Runtime</dt><dd>≈ 45 minutes</dd></div>
+    <div><dt>Host</dt><dd>Dataflow Labs</dd></div>
+  </footer>
+</body>
+</html>
